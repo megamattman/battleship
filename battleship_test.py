@@ -13,9 +13,9 @@ def check_battleship_number(exp_ships, filled_spaces):
         ship_gen_error_flg = 1
         return False
 
-def check_result_of_shot (actual, exp, msg) :
+def check_result (actual, exp, msg) :
     if (actual == exp):
-        print "SUCCESS:check_result_of_shot " + msg
+        print "SUCCESS: " + function_name() + " " + msg
     else:
         print output_fail_string(actual, exp, function_name(), msg)
     

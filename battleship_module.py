@@ -1,12 +1,11 @@
 class battleship (object):
 
-    def __init__ (self,  name, size, row=0, col=0, facing='n', placed=0):
+    def __init__ (self,  name, size, row=0, col=0, placed=0):
         self.name = name
         self.size = size
         self.row = row
         self.col = col
         self.placed = placed
-        self.facing = facing
         self.destroyed = False
         self.hits = 0
 

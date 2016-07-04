@@ -13,10 +13,16 @@ import battleship_module
 board_rows = 10;
 board_cols = 10;
 #debug message vars
-debug = 0
+debug = 1
 ship_gen_error_msg = "Incorrect ships"
 ship_gen_error_flg = 0
 #end debug mesg vars
+
+#class to hold row/col
+class coords (object):
+    def __init__ (self, row = 0, col = 0) :
+        self.row = row
+        self.col = col
 
 #board that has the boat locations
 master_board = game_board_module.game_board(board_rows, board_cols, 'O', 'F')
@@ -49,7 +55,7 @@ def add_random_enemy_ship(board, gen):
     row = randint(0, board.rows-1)
     col = randint(0, board.cols-1)
     if (debug):
-        print("New ship at %d,%d"%(row,col))
+        print("New ship at %s,%d"%( chr(ord('A')+row),col))
     #if failed to add the ship, try again
     if (add_enemy_ship(board,row,col) == False):
         add_random_enemy_ship(board, gen+1)
@@ -98,10 +104,11 @@ battleship_test.check_battleship_number(5,master_board.filled_spaces)
 #end random ship add
 print ("ADD A SHIP TEST")
 #add ship in known location
-master_board.fill_space(0,0)
-battleship_test.check_battleship_number(6,master_board.filled_spaces)
-master_board.fill_space(0,0)
-battleship_test.check_battleship_number(6,master_board.filled_spaces)
+if (master_board.get_space(0,0) != '0') :
+    master_board.fill_space(0,0)
+    battleship_test.check_battleship_number(6,master_board.filled_spaces)
+    master_board.fill_space(0,0)
+    battleship_test.check_battleship_number(6,master_board.filled_spaces)
 master_board.print_board()
 #Set up known empty space
 master_board.empty_space(1,1)
@@ -111,9 +118,9 @@ print("PLAYER MISS TEST")
 miss_row = 1
 miss_col = 1
 battleship_test.check_grid_pos(player_board, miss_row,miss_col, 'O', "Empty Space")
-battleship_test.check_result_of_shot(player_shot(miss_row,miss_col,player_board,master_board,battleships), False, "Empty Space")
+battleship_test.check_result(player_shot(miss_row,miss_col,player_board,master_board,battleships), False, "Empty Space")
 battleship_test.check_grid_pos(player_board, miss_row,miss_col, 'X', "Player Miss")
-battleship_test.check_result_of_shot(player_shot(miss_row,miss_col,player_board,master_board,battleships), False, "Prev miss shot")
+battleship_test.check_result(player_shot(miss_row,miss_col,player_board,master_board,battleships), False, "Prev miss shot")
 battleship_test.check_grid_pos(player_board, miss_row,miss_col, 'X', "Player Repeated Miss")
 #end miss
 #player hit
@@ -121,9 +128,9 @@ print("PLAYER HIT TEST")
 hit_row = 0
 hit_col = 0
 battleship_test.check_grid_pos(player_board, hit_row,hit_col, 'O', "Before player hit")
-battleship_test.check_result_of_shot(player_shot(hit_row,hit_col,player_board,master_board,battleships), True, "Good shot")
+battleship_test.check_result(player_shot(hit_row,hit_col,player_board,master_board,battleships), True, "Good shot")
 battleship_test.check_grid_pos(player_board, hit_row,hit_col, 'H', "Player Hit")
-battleship_test.check_result_of_shot(player_shot(hit_row,hit_col,player_board,master_board,battleships), False, "Prev hit shot")
+battleship_test.check_result(player_shot(hit_row,hit_col,player_board,master_board,battleships), False, "Prev hit shot")
 battleship_test.check_grid_pos(player_board, hit_row,hit_col, 'H', "Hit repeat")
 #end player shot test
 
@@ -140,9 +147,61 @@ for i in range(4):
 battleships['M'] = battleship_matt
 
 for i in range(4):
-    battleship_test.check_grid_pos(player_board, 2,i, 'O', "Before Mattazor hit" + str(i))
-    battleship_test.check_result_of_shot(player_shot(2,i,player_board,master_board,battleships), True, "Good shot Mattazor" + str(i))
+    battleship_test.check_grid_pos(player_board, 2,i, player_board.empty_space, "Before Mattazor hit" + str(i))
+    battleship_test.check_result(player_shot(2,i,player_board,master_board,battleships), True, "Good shot Mattazor" + str(i))
     battleship_test.check_grid_pos(player_board, 2,i, 'H', "Player Hit Mattazor" + str(i))
-    battleship_test.check_result_of_shot(player_shot(2,i,player_board,master_board,battleships), False, "Prev hit shot Mattazor" + str(i))
+    battleship_test.check_result(player_shot(2,i,player_board,master_board,battleships), False, "Prev hit shot Mattazor" + str(i))
     battleship_test.check_grid_pos(player_board, 2,i, 'H', "Hit repeat Mattazor" + str(i))
 
+battleship_test.check_result(battleships['M'].destroyed, True, "MATTAZOR DESTROYED")
+
+#Will return a list of coords in the coords object format
+#Will check 'end' of potential coord range,
+#If out of bound will return empty 
+def get_list_of_coords (row, col, facing, size, board):
+    ship_coords =[]
+    if   facing == 'U':
+        if (row-size) < 0 :
+            return ship_coords
+        for i in range(size):
+            ship_coords.append(coords(row-i,col)) 
+    elif facing == 'D':
+        if (row-size) > board.row-1 :
+            return ship_coords
+        for i in range(size):
+            ship_coords.append(coords(row+i,col)) 
+    elif facing == 'L':
+        if (row-size) < 0 :
+            return ship_coords
+        for i in range(size):
+            ship_coords.append(coords(row,col-i)) 
+    elif facing == 'R':
+        if (row-size) > board.rows :
+            return ship_coords
+        for i in range(size):
+            ship_coords.append(coords(row,col+i)) 
+    return ship_coords
+
+#Makes sure all coords have a particular char
+def check_valid_ship_coords(ships_coords, board, legal_char):
+    for item in ship_coords:
+        row = ship_coords[item].row
+        col = ship_coords[item].col
+        if (board.board[row][col] != legal_char):
+            return False
+    return True
+
+#check the request facing to determine if valid
+#on fail return list of valid facings
+def check_facing (row, col, facing, size, master_board) :
+    possible_ships_coords = get_list_of_coords(row, col, facing, size)
+    if (check_valid_ship_coords == True):
+        return True
+    
+    return False
+for items in get_list_of_coords(4,4,'U',2):
+    print str(items.row) + " " +str(items.col)
+
+#Start position will be added to 
+#def place_ship (row, col, master_board, battleship, facing) :
+    
