@@ -24,7 +24,7 @@ class game_board(object):
     #Return true if grid location is empty_char else False
     def is_space_empty(self,row,col):
         if (self.check_range(row,col) == True):
-            if (self.board[row][col] == self.empty_char) :
+            if (self.get_space(row,col) == self.empty_char) :
                 return True
             else:
                 return False
@@ -33,12 +33,16 @@ class game_board(object):
     #by default does not modify filled count
     def set_space (self,row,col,char, fill_count_mod=0):     
         if (self.check_range(row,col) == True):
-            if (self.board[row][col] != char):
+            if (self.get_space(row,col) != char):
                 self.board[row][col] = char
                 self.filled_spaces += fill_count_mod
                 return True
             else:
                 return False
+
+    #return the state of a coordinate
+    def get_space (self, row, col):
+        return (self.board[row][col])
 
     #fill and empty functions for convienance
     def fill_space(self,row,col):
@@ -49,5 +53,17 @@ class game_board(object):
 
     #Output board to console
     def print_board(self):
+        for col in range(self.cols):
+            if (col == 0):
+                print "  " + str(col),
+            else:
+                print col,
+        else:
+            print
+        row_no = 0
         for row in self.board:
-            print " ".join(row)
+            print  chr(ord('A')+row_no) + " " + " ".join(row)
+            row_no += 1
+        else :
+            print
+        
