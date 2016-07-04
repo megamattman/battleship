@@ -199,7 +199,7 @@ def check_facing (row, col, facing, size, master_board) :
         return True
     
     return False
-for items in get_list_of_coords(4,4,'U',2):
+for items in get_list_of_coords(4,4,'U',2, master_board):
     print str(items.row) + " " +str(items.col)
 
 #Start position will be added to 
