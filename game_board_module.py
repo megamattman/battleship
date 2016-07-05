@@ -10,8 +10,7 @@ class game_board(object):
         #board will contain a grid of chars
         self.board = []
         #initialise board with empty chars
-        for i in range(self.rows):
-            self.board.append([self.empty_char]*self.cols)    
+        self.init_board()
 
     #return false if location is out of range
     def check_range (self,row,col) :
@@ -67,3 +66,7 @@ class game_board(object):
         else :
             print
         
+    def init_board(self):
+        self.board=[]
+        for i in range(self.rows):
+            self.board.append([self.empty_char]*self.cols)  
